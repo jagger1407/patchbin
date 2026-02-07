@@ -14,17 +14,7 @@ Operation* op_Parse(Argument* arg) {
     Operation* op = (Operation*)malloc(sizeof(Operation));
     memset(op, 0x00, sizeof(Operation));
 
-    switch(arg->type) {
-        case ARG_INSERT:
-            op->type = OP_INSERT;
-            break;
-        case ARG_REPLACE:
-            op->type = OP_REPLACE;
-            break;
-        default:
-            op->type = OP_INVALID;
-            break;
-    }
+    op->type = op_ArgOpType(arg->type);
     if(op->type == OP_INVALID) {
         free(op);
         return NULL;

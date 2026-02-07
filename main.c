@@ -40,6 +40,7 @@ int main(int argc, char** argv)
         args[argcnt] = cur;
         argcnt++;
         arglist += cur->count + 1;
+        if(arglist >= argv + argc) break;
         cur = arg_Parse(arglist);
 
     }
@@ -56,7 +57,7 @@ int main(int argc, char** argv)
         if(arg->type == ARG_FILE) {
             files[fidx] = fopen(*arg->values, "rb+");
             if(files[fidx] == NULL) {
-                fprintf(stderr, "ERROR: Files '%s' couldn't be opened: ", *arg->values);
+                fprintf(stderr, "ERROR: File '%s' couldn't be opened: ", *arg->values);
                 perror(NULL);
             }
             fnames[fidx] = *arg->values;
