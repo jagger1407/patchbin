@@ -9,6 +9,7 @@ struct _arg_id {
 
 const struct _arg_id _args[] = {
     { 1, "-f", "--file", ": [File Path]\t\t- Specifies a file that is to be patched." },
+    { 1, "-d", "--directory", ": [Directory Path]\t- Specifies a folder where every file in it should be patched." },
     { 0, "-h", "--help", ": Print help information." },
 
     { 2, "-i", "--insert", ": [Offset] [Bytes]\t- Insert bytes at given offset." },

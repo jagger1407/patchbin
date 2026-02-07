@@ -3,6 +3,7 @@
 
 #include "argparse.h"
 #include "operation.h"
+#include "dirreader.h"
 
 void printHelp() {
     puts("patchbin - Binary file patcher");
@@ -24,6 +25,7 @@ int main(int argc, char** argv)
     Argument* args[argc];
     int argcnt = 0;
     int fcnt = 0;
+    int dcnt = 0;
     int opcnt = 0;
 
     char** arglist = argv+1;
@@ -38,6 +40,9 @@ int main(int argc, char** argv)
         if(cur->type == ARG_FILE) {
             fcnt++;
         }
+        if(cur->type == ARG_DIR) {
+            dcnt++;
+        }
         else if(op_ArgOpType(cur->type) != OP_INVALID) {
             opcnt++;
         }
@@ -48,19 +53,22 @@ int main(int argc, char** argv)
         cur = arg_Parse(arglist);
     }
     // If no files are given, no patching will occur
-    if(fcnt == 0) {
+    if(fcnt == 0 && dcnt == 0) {
         for(int a=0;a<argcnt;a++) {
             arg_Free(args[a]);
         }
         exit(EXIT_SUCCESS);
     }
     // Creating handles
-    puts("Creating handles...");
+    //puts("Creating handles...");
     Operation* ops[opcnt];
     char* fnames[fcnt];
     FILE* files[fcnt];
+    char** dirs[dcnt];
+    int dirfcnt[dcnt];
 
     int oidx = 0;
+    int didx = 0;
     int fidx = 0;
     for(int i=0;i<argcnt;i++) {
         Argument* arg = args[i];
@@ -73,6 +81,10 @@ int main(int argc, char** argv)
             fnames[fidx] = *arg->values;
             fidx++;
             continue;
+        }
+        else if(arg->type == ARG_DIR) {
+            dirs[didx] = dir_GetFiles(*arg->values, &dirfcnt[didx]);
+            didx++;
         }
         else if(op_ArgOpType(arg->type) != OP_INVALID) {
             ops[oidx] = op_Parse(arg);
@@ -91,7 +103,28 @@ int main(int argc, char** argv)
         fclose(files[f]);
         printf("Done.\n");
     }
+    for(int d=0;d<dcnt;d++) {
+        if(dirs[d] == NULL) continue;
+        for(int df=0;df<dirfcnt[d];df++) {
+            printf("Applying patches to '%s'... ", dirs[d][df]);
+            FILE* fp = fopen(dirs[d][df], "rb+");
+            if(fp == NULL) {
+                fprintf(stderr, "ERROR: File '%s' couldn't be opened: ", dirs[d][df]);
+                perror(NULL);
+                continue;
+            }
+            for(int o=0;o<opcnt;o++) {
+                op_Apply(ops[o], fp);
+            }
+            printf("Done.\n");
+            fclose(fp);
+        }
 
+    }
+
+    for(int d=0;d<dcnt;d++) {
+        dir_Free(dirs[d], dirfcnt[d]);
+    }
     for(int o=0;o<opcnt;o++) {
         op_Free(ops[o]);
     }

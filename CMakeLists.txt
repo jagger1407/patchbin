@@ -9,6 +9,7 @@ endif()
 set(PROJECT_SOURCES
     argparse.c
     operation.c
+    dirreader.c
     main.c
 )
 

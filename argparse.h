@@ -11,6 +11,7 @@ typedef enum argtype_e {
     ARG_INVALID = -1,
 
     ARG_FILE,
+    ARG_DIR,
     ARG_HELP,
 
     ARG_INSERT,
