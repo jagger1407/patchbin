@@ -23,6 +23,7 @@ patchbin [options]
 |Option|Arguments|Description|
 |-|-|-|
 | `-f`,`--file` | `[File Path]` | Specifies the file to be patched |
+| `-d`,`--directory` | `[Directory Path]` | Specifies a directory in which all files will be patched. |
 | `-h`,`--help` |  | Print help information |
 | `-i`,`--insert` | `[Offset] [Bytes]` | Insert bytes at a given offset |
 | `-r`,`--replace` | `[Offset] [Bytes]` | Replaces bytes at a given offset |
@@ -43,6 +44,7 @@ The `--add` operation supports the following data types:
 
 Multiple files can be specified by adding them each prefixed with a `-f`/`--file` specifier.
 Example:
+
 `patchbin -f file1.bin -f file2.bin -f file3.bin -r 0x00 FF`
 
 # Building
