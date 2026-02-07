@@ -8,11 +8,11 @@ struct _arg_id {
 };
 
 const struct _arg_id _args[] = {
-    { 0, "", "", "" },
     { 1, "-f", "--file", ": [File Path]\t\t- Specifies a file that is to be patched." },
+    { 0, "-h", "--help", ": Print help information." },
+
     { 2, "-i", "--insert", ": [Offset] [Bytes]\t- Insert bytes at given offset." },
     { 2, "-r", "--replace", ": [Offset] [Bytes]\t- Replace bytes at given offset." },
-    { 0, "-h", "--help", ": Print help information." }
 };
 
 bool arg_IsArg(const char* str) {
@@ -58,10 +58,10 @@ int8_t _arg_GetNibble(char c) {
     else return -1;
 }
 
-uint8_t* arg_ReadBytes(char* bytestr) {
+uint8_t* arg_ReadBytes(char* bytestr, uint64_t* len) {
     if(bytestr == NULL || *bytestr == 0x00) return NULL;
 
-    uint32_t len = 0;
+    uint64_t blen = 0;
     int digits = 0;
 
     char* cur = bytestr;
@@ -72,17 +72,21 @@ uint8_t* arg_ReadBytes(char* bytestr) {
         if(*cur == ' ') {
             cur++;
             if(digits > 2) return NULL;
-            if(digits == 2) len++;
+            if(digits == 2) blen++;
             digits = 0;
             continue;
         }
         digits++;
         cur++;
     }
-    if(digits == 2) len++;
+    if(digits == 2) blen++;
 
-    uint8_t* bytes = (uint8_t*)malloc(len);
-    memset(bytes, 0x00, len);
+    if(len) {
+        *len = blen;
+    }
+
+    uint8_t* bytes = (uint8_t*)malloc(blen);
+    memset(bytes, 0x00, blen);
     uint32_t idx = 0;
     digits = 1;
 
@@ -109,6 +113,31 @@ uint8_t* arg_ReadBytes(char* bytestr) {
 
     return bytes;
 }
+
+uint64_t arg_ReadOffset(char* hexstr) {
+    if(hexstr == NULL || *hexstr == 0x00) return (uint64_t)-1;
+    if(hexstr[0] != '0' || hexstr[1] != 'x') {
+        return atoll(hexstr);
+    }
+
+    uint64_t out = 0;
+
+    char* cur = hexstr + strlen(hexstr) - 1;
+    int idx = 0;
+
+    while(*cur != 'x') {
+        int8_t nibble = _arg_GetNibble(*cur);
+        if(nibble == -1) {
+            return (uint64_t)-1;
+        }
+        out += nibble << (idx * 4);
+        idx++;
+        cur--;
+    }
+
+    return out;
+}
+
 
 Argument* arg_Parse(char** args) {
     if(!arg_IsArg(*args)) return NULL;

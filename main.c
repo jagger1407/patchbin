@@ -2,6 +2,7 @@
 #include <stdlib.h>
 
 #include "argparse.h"
+#include "operation.h"
 
 void printHelp() {
     puts("patchbin - Binary file patcher");
@@ -17,45 +18,74 @@ void printHelp() {
 int main(int argc, char** argv)
 {
     Argument* args[argc];
-    int cnt = 0;
+    int argcnt = 0;
+    int fcnt = 0;
+    int opcnt = 0;
 
     char** arglist = argv+1;
 
+    // Parsing Arguments
     Argument* cur = arg_Parse(arglist);
     while(cur != NULL) {
         if(cur->type == ARG_HELP) {
             printHelp();
             exit(EXIT_SUCCESS);
         }
-        args[cnt] = cur;
-        cnt++;
+        if(cur->type == ARG_FILE) {
+            fcnt++;
+        }
+        else if(op_ArgOpType(cur->type) != OP_INVALID) {
+            opcnt++;
+        }
+        args[argcnt] = cur;
+        argcnt++;
         arglist += cur->count + 1;
         cur = arg_Parse(arglist);
 
     }
+    // Creating handles
+    puts("Creating handles...");
+    Operation* ops[opcnt];
+    char* fnames[fcnt];
+    FILE* files[fcnt];
 
-
-
-    char* argtypes[] = {
-        "",
-        "ARG_FILE",
-        "ARG_INSERT",
-        "ARG_REPLACE",
-        "ARG_HELP",
-    };
-
-    puts("Arguments found:");
-    for(int i=0;i<cnt;i++) {
+    int oidx = 0;
+    int fidx = 0;
+    for(int i=0;i<argcnt;i++) {
         Argument* arg = args[i];
-        printf("Argument %s : Values", argtypes[arg->type]);
-        for(int v=0;v<arg->count;v++) {
-            printf(" '%s'", arg->values[v]);
+        if(arg->type == ARG_FILE) {
+            files[fidx] = fopen(*arg->values, "rb+");
+            if(files[fidx] == NULL) {
+                fprintf(stderr, "ERROR: Files '%s' couldn't be opened: ", *arg->values);
+                perror(NULL);
+            }
+            fnames[fidx] = *arg->values;
+            fidx++;
+            continue;
         }
-        printf("\n");
-        arg_Free(arg);
+        else if(op_ArgOpType(arg->type) != OP_INVALID) {
+            ops[oidx] = op_Parse(arg);
+            oidx++;
+            continue;
+        }
     }
 
+    // Applying patches
+    for(int f=0;f<fcnt;f++) {
+        if(files[f] == NULL) continue;
+        printf("Applying patches to '%s'... ", fnames[f]);
+        for(int o=0;o<opcnt;o++) {
+            op_Apply(ops[o], files[f]);
+        }
+        fclose(files[f]);
+        printf("Done.\n");
+    }
 
-
+    for(int o=0;o<opcnt;o++) {
+        op_Free(ops[o]);
+    }
+    for(int a=0;a<argcnt;a++) {
+        arg_Free(args[a]);
+    }
     exit(EXIT_SUCCESS);
 }

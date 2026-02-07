@@ -8,12 +8,13 @@
 #include <stdbool.h>
 
 typedef enum argtype_e {
-    ARG_INVALID,
+    ARG_INVALID = -1,
 
     ARG_FILE,
+    ARG_HELP,
+
     ARG_INSERT,
     ARG_REPLACE,
-    ARG_HELP,
 
     ARG_COUNT
 } ArgumentType;
@@ -30,7 +31,9 @@ ArgumentType arg_GetType(const char* argstr);
 
 char* arg_GetArgHelp(ArgumentType type);
 
-uint8_t* arg_ReadBytes(char* bytestr);
+uint8_t* arg_ReadBytes(char* bytestr, uint64_t* len);
+
+uint64_t arg_ReadOffset(char* hexstr);
 
 Argument* arg_Parse(char** args);
 
