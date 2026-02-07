@@ -5,8 +5,52 @@ const struct {
     ArgumentType atype;
 } mappings[] = {
     { OP_INSERT, ARG_INSERT },
-    { OP_REPLACE, ARG_REPLACE }
+    { OP_REPLACE, ARG_REPLACE },
+    { OP_ADD, ARG_ADD }
 };
+
+const char* opdt_identifiers[] = {
+    "s8",
+    "u8",
+    "s16",
+    "u16",
+    "s32",
+    "u32",
+    "s64",
+    "u64",
+    "f32",
+    "f64"
+};
+
+OperationDataType op_GetDataType(char* dtstr) {
+    if(dtstr == NULL || *dtstr == 0x00) return OPDT_INVALID;
+
+    for(int i=0;i<OPDT_COUNT;i++) {
+        if(strcmp(dtstr, opdt_identifiers[i]) == 0) {
+            return i;
+        }
+    }
+    return OPDT_INVALID;
+}
+
+uint64_t op_ReadValue(OperationDataType dt, char* str) {
+    if(dt != OPDT_FLOAT && dt != OPDT_DOUBLE) return arg_ReadValue(str);
+
+    float sign = 1;
+    if(*str == '-') {
+        sign = -1;
+        str++;
+    }
+
+    if(dt == OPDT_FLOAT) {
+        float f = sign * atof(str);
+        return *((uint64_t*)&f);
+    }
+    else {
+        double d = sign * atof(str);
+        return *((uint64_t*)&d);
+    }
+}
 
 Operation* op_Parse(Argument* arg) {
     if(arg == NULL) return NULL;
@@ -16,12 +60,27 @@ Operation* op_Parse(Argument* arg) {
 
     op->type = op_ArgOpType(arg->type);
     if(op->type == OP_INVALID) {
-        free(op);
+        op_Free(op);
         return NULL;
     }
 
-    op->offset = arg_ReadOffset(arg->values[0]);
-    op->data = arg_ReadBytes(arg->values[1], &op->datalen);
+    op->offset = arg_ReadValue(arg->values[0]);
+    switch(op->type) {
+        case OP_INSERT:
+        case OP_REPLACE:
+            op->data = arg_ReadBytes(arg->values[1], &op->datalen);
+            break;
+        case OP_ADD:
+            op->datatype = op_GetDataType(arg->values[1]);
+            if(op->datatype == OPDT_INVALID) {
+                op_Free(op);
+                return NULL;
+            }
+            op->value = op_ReadValue(op->datatype, arg->values[2]);
+        default:
+            break;
+    }
+
 
     return op;
 }
@@ -68,6 +127,55 @@ void op_ReplaceData(Operation* op, FILE* fp) {
     fwrite(op->data, 1, op->datalen, fp);
 }
 
+void op_AddValue(Operation* op, FILE* fp) {
+    if(op == NULL || fp == NULL || op->datatype == OPDT_INVALID) return;
+
+    int dtlen[] = { 1, 1, 2, 2, 4, 4, 8, 8, 4, 8 };
+
+    uint8_t ptr[dtlen[op->datatype]];
+
+    fseek(fp, op->offset, SEEK_SET);
+    fread(ptr, 1, dtlen[op->datatype], fp);
+
+    switch(op->datatype) {
+        case OPDT_BYTE:
+            *((int8_t*)ptr) += (int8_t)op->value;
+            break;
+        case OPDT_UBYTE:
+            *((uint8_t*)ptr) += (uint8_t)op->value;
+            break;
+        case OPDT_SHORT:
+            *((int16_t*)ptr) += (int16_t)op->value;
+            break;
+        case OPDT_USHORT:
+            *((uint16_t*)ptr) += (uint16_t)op->value;
+            break;
+        case OPDT_INT:
+            *((int32_t*)ptr) += (int32_t)op->value;
+            break;
+        case OPDT_UINT:
+            *((uint32_t*)ptr) += (uint32_t)op->value;
+            break;
+        case OPDT_LONG:
+            *((int64_t*)ptr) += (int64_t)op->value;
+            break;
+        case OPDT_ULONG:
+            *((uint64_t*)ptr) += op->value;
+            break;
+        case OPDT_FLOAT:
+            *((float*)ptr) += *((float*)&op->value);
+            break;
+        case OPDT_DOUBLE:
+            *((double*)ptr) += *((double*)&op->value);
+            break;
+        default:
+            break;
+    }
+
+    fseek(fp, op->offset, SEEK_SET);
+    fwrite(ptr, 1, dtlen[op->datatype], fp);
+}
+
 
 void op_Apply(Operation* op, FILE* fp) {
     if(op == NULL || fp == NULL || op->type == OP_INVALID) return;
@@ -79,6 +187,8 @@ void op_Apply(Operation* op, FILE* fp) {
         case OP_REPLACE:
             op_ReplaceData(op, fp);
             break;
+        case OP_ADD:
+            op_AddValue(op, fp);
         default:
             break;
     }

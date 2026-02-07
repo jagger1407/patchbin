@@ -13,6 +13,9 @@ const struct _arg_id _args[] = {
 
     { 2, "-i", "--insert", ": [Offset] [Bytes]\t- Insert bytes at given offset." },
     { 2, "-r", "--replace", ": [Offset] [Bytes]\t- Replace bytes at given offset." },
+    { 3, "-a", "--add", ": [Offset] [Data Type] [Value]\t- Add a value to bytes at given offset.\n\t\t  " \
+                          "Available data types: s8 u8 s16 u16 s32 u32 f32 f64"
+    }
 };
 
 bool arg_IsArg(const char* str) {
@@ -114,15 +117,22 @@ uint8_t* arg_ReadBytes(char* bytestr, uint64_t* len) {
     return bytes;
 }
 
-uint64_t arg_ReadOffset(char* hexstr) {
-    if(hexstr == NULL || *hexstr == 0x00) return (uint64_t)-1;
-    if(hexstr[0] != '0' || hexstr[1] != 'x') {
-        return atoll(hexstr);
+uint64_t arg_ReadValue(char* str) {
+    if(str == NULL || *str == 0x00) return (uint64_t)-1;
+
+    bool sign = false;
+    if(*str == '-') {
+        sign = true;
+        str++;
+    }
+
+    if(str[0] != '0' || str[1] != 'x') {
+        return atoll(str);
     }
 
     uint64_t out = 0;
 
-    char* cur = hexstr + strlen(hexstr) - 1;
+    char* cur = str + strlen(str) - 1;
     int idx = 0;
 
     while(*cur != 'x') {
@@ -133,6 +143,10 @@ uint64_t arg_ReadOffset(char* hexstr) {
         out += nibble << (idx * 4);
         idx++;
         cur--;
+    }
+
+    if(sign) {
+        return (int64_t)(-1 * out);
     }
 
     return out;

@@ -17,6 +17,10 @@ void printHelp() {
 
 int main(int argc, char** argv)
 {
+    if(argc == 1) {
+        printHelp();
+        exit(EXIT_SUCCESS);
+    }
     Argument* args[argc];
     int argcnt = 0;
     int fcnt = 0;
@@ -42,7 +46,13 @@ int main(int argc, char** argv)
         arglist += cur->count + 1;
         if(arglist >= argv + argc) break;
         cur = arg_Parse(arglist);
-
+    }
+    // If no files are given, no patching will occur
+    if(fcnt == 0) {
+        for(int a=0;a<argcnt;a++) {
+            arg_Free(args[a]);
+        }
+        exit(EXIT_SUCCESS);
     }
     // Creating handles
     puts("Creating handles...");

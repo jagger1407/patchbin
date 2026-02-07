@@ -15,6 +15,7 @@ typedef enum argtype_e {
 
     ARG_INSERT,
     ARG_REPLACE,
+    ARG_ADD,
 
     ARG_COUNT
 } ArgumentType;
@@ -33,7 +34,7 @@ char* arg_GetArgHelp(ArgumentType type);
 
 uint8_t* arg_ReadBytes(char* bytestr, uint64_t* len);
 
-uint64_t arg_ReadOffset(char* hexstr);
+uint64_t arg_ReadValue(char* str);
 
 Argument* arg_Parse(char** args);
 
