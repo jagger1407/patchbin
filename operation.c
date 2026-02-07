@@ -9,6 +9,13 @@ const struct {
     { OP_ADD, ARG_ADD }
 };
 
+typedef void (*operation)(Operation* op, FILE* fp);
+const operation operations[] = {
+    &op_InsertData,
+    &op_ReplaceData,
+    &op_AddValue
+};
+
 const char* opdt_identifiers[] = {
     "s8",
     "u8",
@@ -180,18 +187,7 @@ void op_AddValue(Operation* op, FILE* fp) {
 void op_Apply(Operation* op, FILE* fp) {
     if(op == NULL || fp == NULL || op->type == OP_INVALID) return;
 
-    switch(op->type) {
-        case OP_INSERT:
-            op_InsertData(op, fp);
-            break;
-        case OP_REPLACE:
-            op_ReplaceData(op, fp);
-            break;
-        case OP_ADD:
-            op_AddValue(op, fp);
-        default:
-            break;
-    }
+    operations[op->type](op, fp);
 }
 
 
