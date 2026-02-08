@@ -5,6 +5,8 @@
 #include "operation.h"
 #include "dirreader.h"
 
+extern int big;
+
 void printHelp() {
     puts("patchbin - Binary file patcher");
     puts("Syntax:\tpatchbin [options]\n");
@@ -57,6 +59,14 @@ int main(int argc, char** argv)
         for(int a=0;a<argcnt;a++) {
             arg_Free(args[a]);
         }
+        puts("No files given.");
+        exit(EXIT_SUCCESS);
+    }
+    if(opcnt == 0) {
+        for(int a=0;a<argcnt;a++) {
+            arg_Free(args[a]);
+        }
+        puts("No operations given.");
         exit(EXIT_SUCCESS);
     }
     // Creating handles
@@ -90,6 +100,11 @@ int main(int argc, char** argv)
             ops[oidx] = op_Parse(arg);
             oidx++;
             continue;
+        }
+        else if(arg->type == ARG_ENDIAN) {
+            if(strcmp(arg->values[0], "big") == 0) {
+                big = 1;
+            }
         }
     }
 

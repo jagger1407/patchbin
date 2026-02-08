@@ -10,6 +10,8 @@ const struct {
     { OP_SET, ARG_SET }
 };
 
+int big = 0;
+
 typedef void (*operation)(Operation* op, FILE* fp);
 const operation operations[] = {
     &op_InsertData,
@@ -112,6 +114,14 @@ OperationType op_ArgOpType(ArgumentType type) {
     return OP_INVALID;
 }
 
+void op_SwapEndian(void* ptr, int len) {
+    uint8_t* bptr = (uint8_t*)ptr;
+    for(int i=0;i<(len/2);i++) {
+        uint8_t tmp = bptr[i];
+        bptr[i] = bptr[len-1-i];
+        bptr[len-1-i] = tmp;
+    }
+}
 
 void op_InsertData(Operation* op, FILE* fp) {
     if(fp == NULL || op == NULL || op->data == NULL) return;
@@ -182,6 +192,10 @@ void op_AddValue(Operation* op, FILE* fp) {
             break;
     }
 
+    if(big && dtlen[op->datatype] > 1) {
+        op_SwapEndian(&op->value, dtlen[op->datatype]);
+    }
+
     fseek(fp, op->offset, SEEK_SET);
     fwrite(ptr, 1, dtlen[op->datatype], fp);
 }
@@ -190,6 +204,10 @@ void op_SetValue(Operation* op, FILE* fp) {
     if(op == NULL || fp == NULL || op->datatype == OPDT_INVALID) return;
 
     int dtlen[] = { 1, 1, 2, 2, 4, 4, 8, 8, 4, 8 };
+
+    if(big && dtlen[op->datatype] > 1) {
+        op_SwapEndian(&op->value, dtlen[op->datatype]);
+    }
 
     fseek(fp, op->offset, SEEK_SET);
     fwrite(&op->value, 1, dtlen[op->datatype], fp);

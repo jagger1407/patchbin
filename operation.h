@@ -6,6 +6,8 @@
 
 #include "argparse.h"
 
+extern int big;
+
 typedef enum optype_e : int8_t {
     OP_INVALID = -1,
 
