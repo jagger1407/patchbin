@@ -157,6 +157,10 @@ void op_AddValue(Operation* op, FILE* fp) {
     fseek(fp, op->offset, SEEK_SET);
     fread(ptr, 1, dtlen[op->datatype], fp);
 
+    if(big && dtlen[op->datatype] > 1) {
+        op_SwapEndian(ptr, dtlen[op->datatype]);
+    }
+
     switch(op->datatype) {
         case OPDT_BYTE:
             *((int8_t*)ptr) += (int8_t)op->value;
@@ -193,7 +197,7 @@ void op_AddValue(Operation* op, FILE* fp) {
     }
 
     if(big && dtlen[op->datatype] > 1) {
-        op_SwapEndian(&op->value, dtlen[op->datatype]);
+        op_SwapEndian(ptr, dtlen[op->datatype]);
     }
 
     fseek(fp, op->offset, SEEK_SET);
