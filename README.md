@@ -29,6 +29,7 @@ patchbin [options]
 | `-r`,`--replace` | `[Offset] [Bytes]` | Replaces bytes at a given offset |
 | `-a`,`--add` | `[Offset] [Data Type] [Value]` | Add/Subtract a value to the bytes at a given offset |
 | `-s`,`--set` | `[Offset] [Data Type] [Value]` | Set data at a given offset to a specific value |
+| `-e`,`--endian` | `[Endian]` | Select the endian for the given patches.<br>Choices: little, big (default: little) |
 
 The `--add` and `--set` operations support the following data types:
 
