@@ -124,14 +124,14 @@ uint8_t* arg_ReadBytes(char* bytestr, uint64_t* len) {
 uint64_t arg_ReadValue(char* str) {
     if(str == NULL || *str == 0x00) return (uint64_t)-1;
 
-    bool sign = false;
+    int64_t sign = 1;
     if(*str == '-') {
-        sign = true;
+        sign = -1;
         str++;
     }
 
     if(str[0] != '0' || str[1] != 'x') {
-        return atoll(str);
+        return sign * atoll(str);
     }
 
     uint64_t out = 0;
@@ -144,16 +144,12 @@ uint64_t arg_ReadValue(char* str) {
         if(nibble == -1) {
             return (uint64_t)-1;
         }
-        out += (uint64_t)nibble << (idx * 4);
+        out += ((uint64_t)nibble) << (idx * 4);
         idx++;
         cur--;
     }
 
-    if(sign) {
-        return (int64_t)(-1 * out);
-    }
-
-    return out;
+    return sign * out;
 }
 
 
