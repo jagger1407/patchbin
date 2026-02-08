@@ -144,7 +144,7 @@ uint64_t arg_ReadValue(char* str) {
         if(nibble == -1) {
             return (uint64_t)-1;
         }
-        out += nibble << (idx * 4);
+        out += (uint64_t)nibble << (idx * 4);
         idx++;
         cur--;
     }
