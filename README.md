@@ -39,6 +39,8 @@ The `--add` operation supports the following data types:
 | `u16` | Unsigned 16-bit integer | 2 Bytes |
 | `s32` | Signed 32-bit integer | 4 Bytes |
 | `u32` | Unsigned 32-bit integer | 4 Bytes |
+| `s64` | Signed 64-bit integer | 8 Bytes |
+| `u64` | Unsigned 64-bit integer | 8 Bytes |
 | `f32` | 32-bit floating point (float) | 4 Bytes |
 | `f64` | 64-bit floating point (double) | 8 Bytes |
 

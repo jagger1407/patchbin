@@ -15,7 +15,7 @@ const struct _arg_id _args[] = {
     { 2, "-i", "--insert", ": [Offset] [Bytes]\t- Insert bytes at given offset." },
     { 2, "-r", "--replace", ": [Offset] [Bytes]\t- Replace bytes at given offset." },
     { 3, "-a", "--add", ": [Offset] [Data Type] [Value]\t- Add a value to bytes at given offset.\n\t\t  " \
-                          "Available data types: s8 u8 s16 u16 s32 u32 f32 f64"
+                          "Available data types: s8 u8 s16 u16 s32 u32 s64 u64 f32 f64"
     }
 };
 
@@ -42,7 +42,7 @@ ArgumentType arg_GetType(const char* argstr) {
 char* arg_GetArgHelp(ArgumentType type) {
     if(type == ARG_INVALID) return NULL;
     struct _arg_id arg = _args[type];
-    uint32_t len = strlen(arg.opt+1) + strlen(arg.verbose+1) + strlen(arg.description);
+    uint32_t len = strlen(arg.opt) + 1 + strlen(arg.verbose) + 1 + strlen(arg.description);
     char* str = (char*)malloc(len+1);
     str[len] = 0x00;
     sprintf(str, "%s %s\t%s", arg.opt, arg.verbose, arg.description);
