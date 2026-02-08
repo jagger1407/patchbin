@@ -6,14 +6,16 @@ const struct {
 } mappings[] = {
     { OP_INSERT, ARG_INSERT },
     { OP_REPLACE, ARG_REPLACE },
-    { OP_ADD, ARG_ADD }
+    { OP_ADD, ARG_ADD },
+    { OP_SET, ARG_SET }
 };
 
 typedef void (*operation)(Operation* op, FILE* fp);
 const operation operations[] = {
     &op_InsertData,
     &op_ReplaceData,
-    &op_AddValue
+    &op_AddValue,
+    &op_SetValue,
 };
 
 const char* opdt_identifiers[] = {
@@ -78,6 +80,7 @@ Operation* op_Parse(Argument* arg) {
             op->data = arg_ReadBytes(arg->values[1], &op->datalen);
             break;
         case OP_ADD:
+        case OP_SET:
             op->datatype = op_GetDataType(arg->values[1]);
             if(op->datatype == OPDT_INVALID) {
                 op_Free(op);
@@ -183,6 +186,14 @@ void op_AddValue(Operation* op, FILE* fp) {
     fwrite(ptr, 1, dtlen[op->datatype], fp);
 }
 
+void op_SetValue(Operation* op, FILE* fp) {
+    if(op == NULL || fp == NULL || op->datatype == OPDT_INVALID) return;
+
+    int dtlen[] = { 1, 1, 2, 2, 4, 4, 8, 8, 4, 8 };
+
+    fseek(fp, op->offset, SEEK_SET);
+    fwrite(&op->value, 1, dtlen[op->datatype], fp);
+}
 
 void op_Apply(Operation* op, FILE* fp) {
     if(op == NULL || fp == NULL || op->type == OP_INVALID) return;

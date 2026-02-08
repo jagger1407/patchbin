@@ -17,6 +17,7 @@ typedef enum argtype_e {
     ARG_INSERT,
     ARG_REPLACE,
     ARG_ADD,
+    ARG_SET,
 
     ARG_COUNT
 } ArgumentType;

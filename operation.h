@@ -12,6 +12,7 @@ typedef enum optype_e : int8_t {
     OP_INSERT,
     OP_REPLACE,
     OP_ADD,
+    OP_SET,
 
     OP_COUNT
 } OperationType;
@@ -53,6 +54,8 @@ void op_InsertData(Operation* op, FILE* fp);
 void op_ReplaceData(Operation* op, FILE* fp);
 
 void op_AddValue(Operation* op, FILE* fp);
+
+void op_SetValue(Operation* op, FILE* fp);
 
 void op_Apply(Operation* op, FILE* fp);
 

@@ -28,8 +28,9 @@ patchbin [options]
 | `-i`,`--insert` | `[Offset] [Bytes]` | Insert bytes at a given offset |
 | `-r`,`--replace` | `[Offset] [Bytes]` | Replaces bytes at a given offset |
 | `-a`,`--add` | `[Offset] [Data Type] [Value]` | Add/Subtract a value to the bytes at a given offset |
+| `-s`,`--set` | `[Offset] [Data Type] [Value]` | Set data at a given offset to a specific value |
 
-The `--add` operation supports the following data types:
+The `--add` and `--set` operations support the following data types:
 
 | Type | Description | Size |
 |-|-|-|

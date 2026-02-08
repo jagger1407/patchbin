@@ -16,6 +16,9 @@ const struct _arg_id _args[] = {
     { 2, "-r", "--replace", ": [Offset] [Bytes]\t- Replace bytes at given offset." },
     { 3, "-a", "--add", ": [Offset] [Data Type] [Value]\t- Add a value to bytes at given offset.\n\t\t  " \
                           "Available data types: s8 u8 s16 u16 s32 u32 s64 u64 f32 f64"
+    },
+    { 3, "-s", "--set", ": [Offset] [Data Type] [Value]\t- Set bytes at given offset to particular value.\n\t\t  " \
+        "Available data types: s8 u8 s16 u16 s32 u32 s64 u64 f32 f64"
     }
 };
 
