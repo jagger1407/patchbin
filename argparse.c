@@ -12,8 +12,12 @@ const struct _arg_id _args[] = {
     { 1, "-d", "--directory", ": [Directory Path]\t- Specifies a folder where every file in it should be patched." },
     { 0, "-h", "--help", ": Print help information." },
 
-    { 2, "-i", "--insert", ": [Offset] [Bytes]\t- Insert bytes at given offset." },
-    { 2, "-r", "--replace", ": [Offset] [Bytes]\t- Replace bytes at given offset." },
+    { 2, "-i", "--insert", ": [Offset] [Bytes]\t- Insert bytes at given offset.\n\t\t  " \
+        "With \"s:[string]\" it is possible to use ASCII strings."
+    },
+    { 2, "-r", "--replace", ": [Offset] [Bytes]\t- Replace bytes at given offset.\n\t\t  " \
+        "With \"s:[string]\" it is possible to use ASCII strings."
+    },
     { 3, "-a", "--add", ": [Offset] [Data Type] [Value]\t- Add a value to bytes at given offset.\n\t\t  " \
                           "Available data types: s8 u8 s16 u16 s32 u32 s64 u64 f32 f64"
     },
@@ -70,6 +74,18 @@ int8_t _arg_GetNibble(char c) {
 
 uint8_t* arg_ReadBytes(char* bytestr, uint64_t* len) {
     if(bytestr == NULL || *bytestr == 0x00) return NULL;
+
+    // Specify text strings
+    if(bytestr[0] == 's' && bytestr[1] == ':') {
+        int slen = strlen(bytestr) - 2;
+        if(len) {
+            *len = slen;
+        }
+        uint8_t* bytes = (uint8_t*)malloc(slen+1);
+        bytes[slen] = 0x00;
+        memcpy(bytes, bytestr+2, slen);
+        return bytes;
+    }
 
     uint64_t blen = 0;
     int digits = 0;

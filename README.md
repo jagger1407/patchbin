@@ -31,6 +31,11 @@ patchbin [options]
 | `-s`,`--set` | `[Offset] [Data Type] [Value]` | Set data at a given offset to a specific value |
 | `-e`,`--endian` | `[Endian]` | Select the endian for the given patches.<br>Choices: little, big (default: little) |
 
+For `--insert` and `--replace` options, text strings can be passed by using the `s:` prefix.
+Example: to insert the string "Test String" at the beginning of the file:
+```patchbin -f file.bin -i "s:Test String"```
+Note: The string will be in the default ASCII encoding.
+
 The `--add` and `--set` operations support the following data types:
 
 | Type | Description | Size |
