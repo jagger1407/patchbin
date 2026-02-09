@@ -15,6 +15,7 @@ void printHelp() {
         char* text = arg_GetArgHelp(i);
         puts(text);
         free(text);
+        puts("");
     }
 }
 

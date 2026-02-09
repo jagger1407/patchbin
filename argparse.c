@@ -8,15 +8,17 @@ struct _arg_id {
 };
 
 const struct _arg_id _args[] = {
-    { 1, "-f", "--file", ": [File Path]\t\t- Specifies a file that is to be patched." },
-    { 1, "-d", "--directory", ": [Directory Path]\t- Specifies a folder where every file in it should be patched." },
+    { 1, "-f", "--file", ": [File Path]\t\t\t- Specifies a file that is to be patched." },
+    { 1, "-d", "--directory", ": [Directory Path]\t\t- Specifies a folder where every file in it should be patched." },
     { 0, "-h", "--help", ": Print help information." },
 
-    { 2, "-i", "--insert", ": [Offset] [Bytes]\t- Insert bytes at given offset.\n\t\t  " \
-        "With \"s:[string]\" it is possible to use ASCII strings."
+    { 2, "-i", "--insert", ": [Offset] [Bytes]\t\t- Insert bytes at given offset.\n\t\t  " \
+        "With \"s:[string]\" it is possible to use an ASCII string.\n\t\t  " \
+        "With \"f:[path]\" it is possible to specify the contents of a file."
     },
-    { 2, "-r", "--replace", ": [Offset] [Bytes]\t- Replace bytes at given offset.\n\t\t  " \
-        "With \"s:[string]\" it is possible to use ASCII strings."
+    { 2, "-r", "--replace", ": [Offset] [Bytes]\t\t- Replace bytes at given offset.\n\t\t  " \
+        "With \"s:[string]\" it is possible to use an ASCII string.\n\t\t  " \
+        "With \"f:[path]\" it is possible to specify the contents of a file."
     },
     { 3, "-a", "--add", ": [Offset] [Data Type] [Value]\t- Add a value to bytes at given offset.\n\t\t  " \
                           "Available data types: s8 u8 s16 u16 s32 u32 s64 u64 f32 f64"
@@ -24,7 +26,7 @@ const struct _arg_id _args[] = {
     { 3, "-s", "--set", ": [Offset] [Data Type] [Value]\t- Set bytes at given offset to particular value.\n\t\t  " \
         "Available data types: s8 u8 s16 u16 s32 u32 s64 u64 f32 f64"
     },
-    { 1, "-e", "--endian", ": [Endian]\t\t- Select endian for operation.\n\t\t  " \
+    { 1, "-e", "--endian", ": [Endian]\t\t\t- Select endian for operation.\n\t\t  " \
         "Available data types: little big (default: little)"
     },
 };
@@ -84,6 +86,29 @@ uint8_t* arg_ReadBytes(char* bytestr, uint64_t* len) {
         uint8_t* bytes = (uint8_t*)malloc(slen+1);
         bytes[slen] = 0x00;
         memcpy(bytes, bytestr+2, slen);
+        return bytes;
+    }
+
+    // Specify file path
+    if(bytestr[0] == 'f' && bytestr[1] == ':') {
+        FILE* fp = fopen(bytestr+2, "rb");
+        if(fp == NULL) {
+            fprintf(stderr, "ERROR: File '%s' couldn't be opened: ", bytestr+2);
+            perror(NULL);
+            return NULL;
+        }
+        uint64_t size = ftell(fp);
+        fseek(fp, 0, SEEK_END);
+        size = ftell(fp) - size;
+        fseek(fp, 0, SEEK_SET);
+
+        if(len) {
+            *len = size;
+        }
+
+        uint8_t* bytes = (uint8_t*)malloc(size);
+        fread(bytes, 1, size, fp);
+        fclose(fp);
         return bytes;
     }
 
