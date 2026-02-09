@@ -36,6 +36,10 @@ Example: to insert the string "Test String" at the beginning of the file:
 ```patchbin -f file.bin -i "s:Test String"```
 Note: The string will be in the default ASCII encoding.
 
+For `--insert` and `--replace` options, the bytes can be read from a file using the `f:` prefix.
+Example: to insert the file data.bin at the beginning of the file:
+```patchbin -f file.bin -i "f:data.bin"```
+
 The `--add` and `--set` operations support the following data types:
 
 | Type | Description | Size |
